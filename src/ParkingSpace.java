@@ -1,3 +1,6 @@
+import vehicle.Vehicle;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class ParkingSpace {
@@ -6,18 +9,29 @@ public class ParkingSpace {
     public int space;
     public boolean ocupated;
     public Person renter;
-    public Date endOfRent;
+    public LocalDateTime endOfRent;
+    public Vehicle vehicle;
 
-    public ParkingSpace(){
+    public ParkingSpace() {
+        parkingId = id++;
+        space = random_int(2, 3) * random_int(2, 3);
+        renter = null;
+    }
+
+    public ParkingSpace(Vehicle veh){
         parkingId = id++;
         space = random_int(2, 3)*random_int(2, 3);
         renter = null;
+        this.vehicle = veh;
     }
 
-    public ParkingSpace(int id){
+    public ParkingSpace(int id, Vehicle veh){
         parkingId = id;
+        space = random_int(2, 3)*random_int(2, 3);
         renter = null;
+        this.vehicle = veh;
     }
+
 
     public int random_int(int Min, int Max)
     {

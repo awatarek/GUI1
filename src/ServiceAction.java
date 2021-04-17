@@ -6,12 +6,18 @@ public class ServiceAction {
     Vehicle vehicle;
     LocalDateTime startDate;
     LocalDateTime endDate;
-    Boolean parkingSpot;
+    boolean parkingSpot;
     int parkingSpotId;
     int buildingId;
+    boolean independent;
+    CarServiceSpot css = null;
+    IndependentCarServiceSpot icss = null;
+    static int serviceInt = 0;
+    int serviceID;
 
 
-    public ServiceAction(Vehicle vehicle, LocalDateTime date, LocalDateTime plusDays, boolean parkingspot, Building currentBuilding) {
+    public ServiceAction(Vehicle vehicle, LocalDateTime date, LocalDateTime plusDays, boolean parkingspot, ServiceWarehouse currentBuilding) {
+        this.serviceID = serviceInt++;
         this.vehicle = vehicle;
         this.startDate = date;
         this.endDate = plusDays;
@@ -19,3 +25,4 @@ public class ServiceAction {
         this.buildingId = currentBuilding.buildingId;
     }
 }
+

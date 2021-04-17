@@ -1,14 +1,16 @@
+import exception.NeverRentException;
 import vehicle.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 
 public class DataCollector {
     public static ArrayList<Person> customers = new ArrayList<Person>();
     public static Person currentUser = new Person(0, "admin", "admin");
-    public static ArrayList<Building> buildings = new ArrayList<Building>();
-    public static Building currentBuilding;
+    public static ArrayList<ServiceWarehouse> buildings = new ArrayList<ServiceWarehouse>();
+    public static ServiceWarehouse currentBuilding;
     public static ConsumerWarehouse currentRoom;
 
     public DataCollector() {
@@ -18,14 +20,10 @@ public class DataCollector {
 
     public void demoOwner() {
         for (int i = 0; i < this.buildings.size(); i++) {
-            Building building = this.buildings.get(i);
-            for(int a = 0; a< building.service.size(); a++)
+            ServiceWarehouse building = this.buildings.get(i);
+            for(ConsumerWarehouse cs: building.storage)
             {
-                for (int b = 0; b < building.service.get(a).storage.size(); b++) {
-                    if (b % 2 == 0) {
-                        building.service.get(a).storage.get(b).renters.add(customers.get(0));
-                    }
-                }
+                cs.renters.add(customers.get(0));
             }
 
             for (int c = 0; c < building.parking.size(); c++) {
@@ -34,7 +32,7 @@ public class DataCollector {
                 }
             }
         }
-        buildings.get(0).service.get(0).storage.get(0).renters.add(currentUser);
+        buildings.get(0).storage.get(0).renters.add(currentUser);
     }
 
     private void setupDemo() {
@@ -42,7 +40,7 @@ public class DataCollector {
             customers.add(new Person());
         }
         for (int i = 0; i < 3; i++) {
-            buildings.add(new Building());
+            buildings.add(new ServiceWarehouse());
         }
     }
 
@@ -64,6 +62,13 @@ public class DataCollector {
     public void showUserData() {
         String info = currentUser.uid + " " + currentUser.firstName + " " + currentUser.lastName + " " + currentUser.pesel;
         System.out.println(info);
+        if(currentUser.firstRent == null){
+            try {
+                throw new NeverRentException();
+            } catch (NeverRentException e) {
+                e.printStackTrace();
+            }
+        }
         showRent();
     }
 
@@ -76,42 +81,49 @@ public class DataCollector {
         ArrayList<ConsumerWarehouse> userStorage = new ArrayList<>();
         ArrayList<ParkingSpace> userParking = new ArrayList<>();
 
-
         for (int i = 0; i < this.buildings.size(); i++) {
-            Building building = this.buildings.get(i);
-            for(int a = 0; a < building.service.size();a++){
-                for (int b = 0; b < building.service.get(a).storage.size(); b++) {
-                    ConsumerWarehouse cw = building.service.get(a).storage.stream().filter(storage -> {
-                        if(storage.renters.size() == 0){
-                            return false;
-                        }
-                        return storage.renters.get(0).equals(this.getCurrentUser());
-                    }).findFirst().orElse(null);
-                    if (cw != null) {
-                        userStorage.add(cw);
-                    }
+            for (int b = 0; b < buildings.get(i).storage.size(); b++) {
+                ConsumerWarehouse cw = buildings.get(i).storage.stream().filter(storage -> {
+                if(storage.renters.size() == 0){
+                    return false;
+                }
+                return storage.renters.get(0).equals(this.getCurrentUser());
+                }).findFirst().orElse(null);
+                if (cw != null) {
+                    userStorage.add(cw);
                 }
             }
+
+            for (int b = 0; b < buildings.get(i).parking.size(); b++) {
+                ParkingSpace ps = buildings.get(i).parking.stream().filter(parking -> {
+                    if(parking.renter == null){
+                        return false;
+                    }
+                    return parking.renter.equals(this.getCurrentUser());
+                }).findFirst().orElse(null);
+                if (ps != null) {
+                    userParking.add(ps);
+                }
+            }
+        }
+
+        for(ConsumerWarehouse cw : userStorage){
+            System.out.println("Storage id: "+cw.cwid+" Leas to: "+cw.endLease.toString());
+        }
+
+        for(ParkingSpace ps : userParking){
+            System.out.println("Parking id: "+ps.parkingId+" Leas to: "+ps.endOfRent.toString());
         }
     }
 
     public void showFreeRooms(int buildingID) {
 
         ArrayList<ConsumerWarehouse> freeStorage = new ArrayList<>();
-        ArrayList<ServiceWarehouse> freeService = new ArrayList<>();
+        ArrayList<IndependentCarServiceSpot> icss = new ArrayList<>();
+        ArrayList<CarServiceSpot> css = new ArrayList<>();
         ArrayList<ParkingSpace> freeParking = new ArrayList<>();
 
-        Building building = this.buildings.get(buildingID);
-        for(int i = 0; i < building.service.size(); i++){
-            for (int a = 0; a < building.service.get(i).storage.size(); a++) {
-                ConsumerWarehouse cw = building.service.get(i).storage.stream().filter(storage -> {
-                    return storage.renters.size() == 0;
-                }).findFirst().orElse(null);
-                if (cw != null) {
-                    freeStorage.add(cw);
-                }
-            }
-        }
+        ServiceWarehouse building = this.buildings.get(buildingID);
 
         for (int c = 0; c < building.parking.size(); c++) {
             ParkingSpace ps = building.parking.stream().filter(parking -> {
@@ -122,18 +134,37 @@ public class DataCollector {
             }
         }
 
-        for(ConsumerWarehouse cw: freeStorage){
-            System.out.println("cw"+cw.cwid);
+        for(ConsumerWarehouse cw: building.storage){
+            if (cw.renters == null) {
+                System.out.println("cw"+cw.cwid);
+            }
         }
 
-        for(ParkingSpace ps: freeParking){
-            System.out.println("ps"+ps.parkingId);
+        for(IndependentCarServiceSpot ss: building.icss){
+            if (ss.ocupated == false) {
+                System.out.println("icss"+ss.icssId);
+            }
+
         }
+
+        for(CarServiceSpot ss: building.css){
+            if (ss.ocupated == false) {
+                System.out.println("css"+ss.cssId);
+            }
+        }
+
+        for(ParkingSpace sp : building.parking){
+            if (sp.renter == null) {
+                System.out.println("sp"+sp.parkingId);
+            }
+        }
+
+
     }
 
     public void chooseBuilding(int buildingId) {
         currentBuilding = buildings.get(buildingId);
-        System.out.println("you choosed building "+currentBuilding);
+        System.out.println("you choosed building "+currentBuilding.buildingId);
     }
 
     public void chooseRoom(int roomId) {
@@ -141,15 +172,13 @@ public class DataCollector {
                 System.out.println("Choose Building first!");
                 return;
             }
-            for(int i = 0; i< currentBuilding.service.size(); i++){
-                for(int a = 0; a < currentBuilding.service.get(i).storage.size(); a++){
-                    ConsumerWarehouse nowCW = currentBuilding.service.get(i).storage.get(a);
-                    if(nowCW.cwid == roomId){
-                        currentRoom = nowCW;
-                        System.out.println("you choosed room: "+currentRoom+" in building "+currentBuilding);
-                        showItems();
-                        return;
-                    }
+            for(int a = 0; a < currentBuilding.storage.size(); a++){
+                ConsumerWarehouse nowCW = currentBuilding.storage.get(a);
+                if(nowCW.cwid == roomId){
+                    currentRoom = nowCW;
+                    System.out.println("you choosed room: "+currentRoom.cwid+" in building "+currentBuilding.buildingId);
+                    showItems();
+                    return;
                 }
             }
     }
@@ -245,13 +274,12 @@ public class DataCollector {
         }
         ArrayList<Item> items = new ArrayList<>();
         for(RoomsInfos rooms: userRooms){
-            int roomid = rooms.roomNumber-1;
-            int buildingid = rooms.buildingNumber-1;
-            for(int i = 0; i < buildings.get(buildingid).service.size(); i++){
-                ServiceWarehouse sw =  buildings.get(buildingid).service.get(i);
-                for(int a = 0; i < sw.storage.size(); i++){
-                    for(Item item: sw.storage.get(a).items){
-                        items.add(item);
+            for(ServiceWarehouse sw: buildings){
+                for(ConsumerWarehouse cw: sw.storage){
+                    if(cw.renters.get(0) == currentUser){
+                        for(Item item: cw.items){
+                            items.add(item);
+                        }
                     }
                 }
             }
@@ -265,89 +293,103 @@ public class DataCollector {
 
     public void showServices(){
         for(int i =0; i < buildings.size(); i++){
-            System.out.println("Building: "+i);
-            for(int x = 0; x < buildings.get(i).service.size(); x++){
-                System.out.println("\tService: "+x);
-                for(int y =0; y < buildings.get(i).service.get(x).css.size(); y++){
-                    CarServiceSpot css = buildings.get(i).service.get(x).css.get(y);
-                    System.out.println("\t\t Car Servise spot: "+y+", is ocupated: "+css.ocupated);
-                }
-
-                for(int y =0; y < buildings.get(i).service.get(x).icss.size(); y++){
-                    IndependentCarServiceSpot icss = buildings.get(i).service.get(x).icss.get(y);
-                    System.out.println("\t\t Independent Car Servise spot: "+y+", is ocupated: "+icss.ocupated);
-                }
+            System.out.println("Service: "+i);
+            for(IndependentCarServiceSpot icss: buildings.get(i).icss){
+                System.out.println("\t\t Independent Car Servise spot: "+icss.icssId+", is ocupated: "+icss.ocupated);
+            }
+            for(CarServiceSpot css: buildings.get(i).css){
+                System.out.println("\t\t Car Servise spot: "+css.cssId+", is ocupated: "+css.ocupated);
             }
         }
     }
 
     public void showAll() {
-        for(int i =0; i < buildings.size(); i++){
-            System.out.println("Building: "+i);
-            for(int x = 0; x < buildings.get(i).service.size(); x++){
-                System.out.println("\tService: "+x);
-                for(int y =0; y < buildings.get(i).service.get(x).css.size(); y++){
-                    CarServiceSpot css = buildings.get(i).service.get(x).css.get(y);
-                    System.out.println("\t\t Car Servise spot: "+y+", is ocupated: "+css.ocupated);
-                }
-
-                for(int y = 0; y < buildings.get(i).service.get(x).icss.size(); y++){
-                    IndependentCarServiceSpot icss = buildings.get(i).service.get(x).icss.get(y);
-                    System.out.println("\t\t Independent Car Servise spot: "+y+", is ocupated: "+icss.ocupated);
-                }
-                for(int y = 0; y < buildings.get(i).service.get(x).storage.size(); y++){
-                    ConsumerWarehouse cw = buildings.get(i).service.get(x).storage.get(y);
-                    System.out.println("\t\t Warehouse: "+cw.cwid+", is ocupated: "+(cw.renters.size()>0));
-                }
+        for(ServiceWarehouse sw: buildings){
+            System.out.println("Service: "+sw.buildingId);
+            for(ConsumerWarehouse cw: sw.storage) {
+                System.out.println("\t\t Warehouse: "+cw.cwid+", is ocupated: "+(cw.renters.size()>0));
             }
-            System.out.println("\tParking:");
-            for(int x = 0; x < buildings.get(i).parking.size(); x++){
-                ParkingSpace ps = buildings.get(i).parking.get(x);
+            for(CarServiceSpot css: sw.css) {
+                System.out.println("\t\t Independent Car Servise spot: "+css.cssId+", is ocupated: "+css.ocupated);
+            }
+            for(IndependentCarServiceSpot icss: sw.icss) {
+                System.out.println("\t\t Independent Car Servise spot: "+icss.icssId+", is ocupated: "+icss.ocupated);
+            }
+            for(ParkingSpace ps: sw.parking) {
                 System.out.println("\t\t Parking: "+ps.parkingId+", ocupated: "+(ps.renter != null));
             }
         }
     }
 
-    public void createServiceJob(String vehicleType, boolean parkingspot, boolean Independent) {
+    public void createServiceJob(String vehicleType, boolean parkingspot, boolean independent) {
         Vehicle vehicle = carGenerator(vehicleType);
-        if(Independent){
-            IndependentCarServiceSpot yourICSS;
-            outerloop2:
-            for(ServiceWarehouse sw: currentBuilding.service){
-                for(IndependentCarServiceSpot icss: sw.icss){
-                    if(icss.ocupated == false){
-                        System.out.println("Your car is repaired in: "+icss.icssId);
-                        yourICSS = icss;
-                        break outerloop2;
-                    }
-                }
-            }
+        IndependentCarServiceSpot yourICSS = null;
+        CarServiceSpot yourCSS = null;
+        if (independent) {
+            yourICSS = getFreeICCS(currentBuilding.buildingId);
         } else {
-            CarServiceSpot yourCSS;
-            outerloop1:
-            for(ServiceWarehouse sw: currentBuilding.service){
-                for(CarServiceSpot css: sw.css){
-                    if(css.ocupated == false){
-                        System.out.println("Your car is repaired in: "+css.cssId);
-                        yourCSS = css;
-                        break outerloop1;
-                    }
-                }
-            }
-            OurDate od = new OurDate();
-            ServiceAction sa = new ServiceAction(vehicle, od.getDate(), od.getDate().plusDays((long) random_int(1,5)), parkingspot, currentBuilding);
-            ParkingSpace parking = null;
-            if(parkingspot){
-                parking = searchFreeParking();
-            }
-            if(parking.parkingId < 1000){
-                sa.parkingSpotId = parking.parkingId;
-            } else if (parking.parkingId > 1000){
-                System.out.println("There are no free parking, your vehicle will be added to parking wait list");
-                currentBuilding.parkingWait.add(new WaitingParking(vehicle, currentUser));
-            }
-            currentUser.serviceActions.add(sa);
+            yourCSS = getFreeCSS(currentBuilding.buildingId);
         }
+        if(yourCSS != null || yourICSS != null){
+            getVehicleToService(vehicle, parkingspot, independent, yourICSS, yourCSS);
+            System.out.println("Car is now being repaired");
+        } else {
+            currentBuilding.waitingWork.add(new WaitingService(currentUser, vehicle, independent ? WorkJob.icss : WorkJob.css, currentBuilding.buildingId, parkingspot));
+        }
+    }
+
+    public IndependentCarServiceSpot getFreeICCS(int building){
+        IndependentCarServiceSpot yourICSS = null;
+        for (IndependentCarServiceSpot icss : buildings.get(building).icss) {
+            if (icss.ocupated == false) {
+                System.out.println("Your car is repaired in: " + icss.icssId);
+                yourICSS = icss;
+            }
+        }
+
+        return yourICSS;
+    }
+
+    public CarServiceSpot getFreeCSS(int building){
+        CarServiceSpot yourCSS = null;
+        for (CarServiceSpot css : buildings.get(building).css) {
+            if (css.ocupated == false) {
+                System.out.println("Your car is repaired in: " + css.cssId);
+                yourCSS = css;
+            }
+        }
+        return yourCSS;
+    }
+
+    public void getVehicleToService(Vehicle vehicle, boolean parkingspot, boolean independent, IndependentCarServiceSpot yourICSS, CarServiceSpot yourCSS){
+        OurDate od = new OurDate();
+        int repairsDays = random_int(1, 5);
+        ServiceAction sa = new ServiceAction(vehicle, od.getDate(), od.getDate().plusDays((long) repairsDays), parkingspot, currentBuilding);
+        TenantAlert ta = new TenantAlert(od.getDate().plusDays(14), currentBuilding.buildingId, (repairsDays * 50), TenantAlertType.service);
+
+        if (independent) {
+            sa.independent = true;
+            sa.icss = yourICSS;
+            yourICSS.ocupated = true;
+            yourICSS.endTime = sa.endDate;
+            yourICSS.vehicle = sa.vehicle;
+            ta.type = roomTypes.icss;
+            ta.room = yourICSS.icssId;
+            yourICSS.jobId = sa.serviceID;
+        } else {
+            sa.independent = false;
+            sa.css = yourCSS;
+            yourCSS.endTime = sa.endDate;
+            yourCSS.vehicle = sa.vehicle;
+            ta.room = yourCSS.cssId;
+            ta.type = roomTypes.css;
+            yourCSS.jobId = sa.serviceID;
+        }
+        if (parkingspot) {
+            ta.price += 150;
+        }
+        currentUser.serviceActions.add(sa);
+        currentUser.rentInfo.add(ta);
     }
 
     private ParkingSpace searchFreeParking() {
@@ -358,11 +400,23 @@ public class DataCollector {
                 break;
             }
         }
-        if(freeSpot == null){
-            freeSpot = new ParkingSpace(1002);
+        return freeSpot;
+    }
+
+    private ParkingSpace searchFreeParking(int buildingId) {
+        ParkingSpace freeSpot = null;
+        ServiceWarehouse sw = (ServiceWarehouse) buildings.stream().filter(building -> {
+            return building.buildingId == buildingId;
+        });
+        for(ParkingSpace ps : sw.parking){
+            if(ps.renter == null) {
+                freeSpot = ps;
+                break;
+            }
         }
         return freeSpot;
     }
+
 
     private Vehicle carGenerator(String vehicleType) {
         if(vehicleType == "offRoad") {
@@ -377,6 +431,57 @@ public class DataCollector {
             return null;
         }
     }
+
+    public void checkForParkingFreeSpace(){
+        OurDate od = new OurDate();
+        for (ServiceWarehouse sw : buildings){
+            for(WaitingParking wp : sw.parkingWait){
+                ParkingSpace freeSpot = searchFreeParking(sw.buildingId);
+                if(freeSpot != null){
+                    freeSpot.ocupated = true;
+                    freeSpot.renter = wp.owner;
+                    freeSpot.endOfRent = od.getDate().plusDays(14);
+                    freeSpot.vehicle = wp.vehicle;
+                    sw.parkingWait.remove(wp);
+                }
+            }
+        }
+    }
+
+    public void checkForServiceFreeSpace(){
+        OurDate od = new OurDate();
+        for (ServiceWarehouse sw : buildings){
+            for(WaitingService ws : sw.waitingWork){
+                if(ws.wj == WorkJob.css){
+                    CarServiceSpot css = getFreeCSS(ws.building);
+                    if(css != null){
+                        getVehicleToService(ws.vehicle, ws.parkingspot, false, null, css);
+                    }
+                } else {
+                    IndependentCarServiceSpot icss = getFreeICCS(ws.building);
+                    if(icss != null){
+                        getVehicleToService(ws.vehicle, ws.parkingspot, true, icss, null);
+                    }
+                }
+            }
+        }
+    }
+
+    public void removeLatePayments() {
+        OurDate od = new OurDate();
+        for(TenantAlert alert : currentUser.tenentsAlerts){
+            LocalDateTime aT = alert.end;
+            LocalDateTime ld = LocalDateTime.of(aT.getYear(), aT.getMonth(), aT.getDayOfMonth(), aT.getHour(),aT.getMinute(),aT.getSecond());
+            ld = ld.plusDays(30);
+            if(od.getMilisec()<getMilisec(ld)){
+                currentUser.tenentsAlerts.remove(alert);
+            }
+        }
+    }
+
+    public long getMilisec(LocalDateTime ldt){
+        return ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
 }
 
 
@@ -388,3 +493,4 @@ class RoomsInfos{
         this.roomNumber = rid;
     }
 }
+

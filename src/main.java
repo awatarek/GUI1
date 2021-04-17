@@ -52,6 +52,7 @@ public class main {
             System.out.println("parking:");
                 System.out.println("\t show \t shows all cars in parking");
                 System.out.println("\t return [id] \t returns car [parking place id] to owner");
+            System.out.println("latePayment: \t removes all TenantAlert from 30 days");
             System.out.println("showAll: \t shows all buildings/rooms data");
 
         } else if(args[0].equals("saveData")){
@@ -106,7 +107,6 @@ public class main {
                 /* wyjęcia przedmiotów*/
         } else if(args[0].equals("service")){
             if(args[1].equals("show")){
-                System.out.println("\t show \t shows all active services");
                 dataCollector.showServices();
             } else if(args[1].equals("check")) {
                 //dataCollector.removeItem(args[2]);
@@ -114,6 +114,8 @@ public class main {
             } else if(args[1].equals("creat")) {
                 dataCollector.createServiceJob(args[2], Boolean.getBoolean(args[3]), Boolean.getBoolean(args[4]));
             }
+        } else if(args[0].equals("latePayment")){
+            dataCollector.removeLatePayments();
         } else if(args[0].equals("showAll")){
             dataCollector.showAll();
         } else {
@@ -124,30 +126,12 @@ public class main {
     /* sprawdzanie czy odpowiednia ilośc argumentów
     /* nie ma wyspecjalizowanych typów samochodów gotowych
 
-    /*
-    W ramach najmu powierzchni serwisu jest możliwość również dodatkowego najmu miejsca
-parkingowego na czas po naprawie (w przypadku braku możliwości terminowego odbioru samochodu po naprawie, jednak czas ten nie może być dłuższy niż 14 dni.
 
-     parkowanie tez dodaje do limitu kosztu
-     jeśli opłacone w ciągu 30dni znika Tenant Alert
-
-     Parkingi jeśli pojazd dłużej niż rent danej osoby to wtedy TenantAlert o odcholowaniu -- usunięciu pojazdu;
-     NeverRentException gdy show user
      Jeśli najem będzie chciała rozpocząć osoba z więcej niż trzema zadłużeniami (co najmniej
 3 obiekty typu Info
 ProblematicTenantException z komunikatem – „Osoba X posiadała już najem pomieszczeń: lista_pomieszczeń - wysokość_zadłużenia”, gdzie X to imię i nazwisko danej osoby,
 lista_pomieszczeń definiuje wynajmowane pomieszczenia, zaś wysokość_zadłużenia definiuje sumaryczną wysokość zadłużenia za to pomieszczenie.
 
-W ramach serwisu osoba oczywiście może również zgłaszać potrzebę serwisową dot. swojego
-pojazdu. Dla uproszczenia zakładamy, ze zgłoszenie serwisowe jest jednoznaczne ze wstawieniem
-pojazdu do wyznaczonego miejsca serwisowego (w zależności od sposobu naprawy pojazdu - naprawa przez mechanika lub samodzielna, których ceny są dowolne). W przypadku, gdy wszystkie
-miejsca serwisowe danego typu są zajęte, klient zostaje wpisany na listę oczekujących, samochód odstawiony na miejsce parkingowe (za darmo) i po uwolnieniu się miejsca serwisowego
-automatycznie samochód zostanie przyjęty do serwisu.
-
-
-
-        //jesli samochod na miejscu parkingowym samochod odcholowany i dajemy TenantAlert
-        //jesli osoba ma trzy TenantAlert
      */
 
 }

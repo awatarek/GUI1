@@ -1,3 +1,4 @@
+import java.sql.ClientInfoStatus;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -16,45 +17,146 @@ public class TenantCheck extends Thread{
 
 class CheckTenant extends TimerTask {
     OurDate ourDate = new OurDate();
+    DataCollector dc = new DataCollector();
 
-    public void run(){
-        ArrayList<Person> clients = DataCollector.customers;
+    public void run() {
+        ArrayList<Person> customers = dc.customers;
         long now = ourDate.getMilisec();
-        for(int i = 0; i<clients.size();i++){
-            Person client = clients.get(i);
-            for(int x =0;i<clients.get(i).rentInfo.size();x++){
-                LocalDateTime time = clients.get(i).rentInfo.get(x).end;
+        for(ServiceWarehouse sw : dc.buildings){
+            for(IndependentCarServiceSpot icss : sw.icss){
+                if(icss.endTime != null){
+                    if(getMilisec(icss.endTime) > now){
+                        ServiceAction ac = getServiceAction(icss.jobId);
+                        if(ac.parkingSpot){
+
+                        }
+                        icss.jobId = 0;
+                        icss.ocupated = false;
+                        icss.endTime = null;
+                    }
+                }
+            }
+            for(CarServiceSpot css : sw.css){
+                if(css.endTime != null) {
+                    if (getMilisec(css.endTime) > now) {
+                        ServiceAction ac = getServiceAction(css.jobId);
+                        if (ac.parkingSpot) {
+                            getVehicleToPaking(ac, getCustomer(css.jobId));
+                        }
+                        css.jobId = 0;
+                        css.ocupated = false;
+                        css.endTime = null;
+                    }
+                }
+            }
+            for(ParkingSpace ps : sw.parking){
+                if(ps.endOfRent != null){
+                    if(getMilisec(ps.endOfRent) > now){
+                        ps.renter.tenentsAlerts.add(new TenantAlert(ps.endOfRent, TenantAlertType.parkingError));
+                        ps.renter = null;
+                        ps.ocupated = false;
+                        ps.endOfRent = null;
+                        ps.vehicle = null;
+                    }
+                }
+            }
+        }
+        for(Person client : customers){
+            for(int x =0;x<client.rentInfo.size();x++){
+                LocalDateTime time = client.rentInfo.get(x).end;
                 long tenentTime = time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                 long diff = tenentTime - now;
                 if(diff<0){
-                    TenantAlert info = clients.get(i).rentInfo.get(x);
+                    TenantAlert info = client.rentInfo.get(x);
                     /*wyslil info o bledzie*/
                     boolean activeAlert = false;
-                    for(TenantAlert ta: clients.get(i).tenentsAlerts){
+                    for(TenantAlert ta: client.tenentsAlerts){
                         if(ta.uid == info.uid){
                             activeAlert = true;
                         }
                     }
                     if(!activeAlert){
-                        clients.get(i).tenentsAlerts.add(new TenantAlert(ourDate.getDate(), info.building, info.room, info.type,50, TenantAlertType.rentEndError, info.uid));
+                        client.tenentsAlerts.add(new TenantAlert(ourDate.getDate(), info.building, info.room, info.type,50, TenantAlertType.rentEndError, info.uid));
                     } else {
                         long datePLus = time.plusDays(30).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
                         if(datePLus < ourDate.getMilisec()){
-                            clients.get(i).rentInfo.remove(info);
-                            for(ServiceWarehouse sw: DataCollector.buildings.get(info.building).service){
-                                for(ConsumerWarehouse cw: sw.storage){
-                                    if(cw.renters.get(0).uid == client.uid){
-                                        cw.renters = null;
-                                        cw.items = null;
-                                    }
+                            client.rentInfo.remove(info);
+                            for(ConsumerWarehouse cw: DataCollector.buildings.get(info.building).storage){
+                                if(cw.renters.get(0).uid == client.uid){
+                                    cw.renters = null;
+                                    cw.items = null;
                                 }
                             }
-
                         }
                     }
-
                 }
             }
         }
     }
+
+    public long getMilisec(LocalDateTime ldt){
+        return ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    public ServiceAction getServiceAction(int saId){
+        ServiceAction SeA = null;
+        for(Person customer: dc.customers){
+            for(ServiceAction sa : customer.serviceActions){
+                if(sa.serviceID == saId){
+                    SeA = sa;
+                }
+            }
+        }
+        return SeA;
+    }
+
+    public Person getCustomer(int saId){
+        Person user = null;
+        for(Person customer: dc.customers){
+            for(ServiceAction sa : customer.serviceActions){
+                if(sa.serviceID == saId){
+                    customer = customer;
+                }
+            }
+        }
+        return user;
+    }
+
+    public void getVehicleToPaking(ServiceAction sa, Person customer){
+        DataCollector dc = new DataCollector();
+        ParkingSpace parking = null;
+        if(sa.parkingSpot){
+            parking = searchFreeParking(sa.buildingId);
+        }
+        if(parking.parkingId < 1000){
+            sa.parkingSpotId = parking.parkingId;
+            parking.renter = getCustomer(sa.serviceID);
+            parking.ocupated = true;
+            parking.endOfRent = sa.endDate;
+        } else if (parking == null){
+            System.out.println("There are no free parking, your vehicle will be added to parking wait list");
+            dc.buildings.get(sa.buildingId).parkingWait.add(new WaitingParking(sa.vehicle, getCustomer(sa.buildingId)));
+        }
+
+        ParkingSpace ps = dc.buildings.get(sa.buildingId).parking.get(sa.parkingSpotId);
+        ps.endOfRent = ourDate.getDate().plusDays(14);
+        ps.renter = customer;
+        ps.ocupated = true;
+
+    }
+
+    private ParkingSpace searchFreeParking(int buildingId) {
+        ParkingSpace freeSpot = null;
+        ServiceWarehouse sw = (ServiceWarehouse) dc.buildings.stream().filter(building -> {
+            return building.buildingId == buildingId;
+        });
+        for(ParkingSpace ps : sw.parking){
+            if(ps.renter == null) {
+                freeSpot = ps;
+                break;
+            }
+        }
+        return freeSpot;
+    }
+
 }

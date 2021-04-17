@@ -31,17 +31,37 @@ public class TenantAlert {
         this.alertType = alertType;
     }
 
+    public TenantAlert(LocalDateTime end, int building, int price, TenantAlertType alertType) {
+        this.uid = id++;
+        this.end = end;
+        this.building = building;
+        this.room = room;
+        this.type = type;
+        this.price = price;
+        this.alertType = alertType;
+    }
+
+    public TenantAlert(LocalDateTime end, TenantAlertType alertType) {
+        this.uid = id++;
+        this.end = end;
+        this.alertType = alertType;
+    }
+
 }
 
 enum roomTypes{
     parking,
     warehouse,
-    service
+    service,
+    icss,
+    css,
 }
 
 enum TenantAlertType{
     rented,
     rentEndError,
+    service,
+    serviceEnd,
     parkingRentet,
     parkingError,
 }
