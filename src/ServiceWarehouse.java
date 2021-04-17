@@ -4,12 +4,16 @@ public class ServiceWarehouse {
     public ArrayList<CarServiceSpot> css = new ArrayList<>();
     public ArrayList<IndependentCarServiceSpot> icss = new ArrayList<>();
     public ArrayList<ConsumerWarehouse> storage = new ArrayList<>();
+    public ArrayList<ParkingSpace> parking = new ArrayList<>();
+    public ArrayList<WaitingParking> parkingWait = new ArrayList<WaitingParking>();
     public int space;
     public int freeSpace;
     public int storageSpace;
-
+    static int id = 0;
+    int buildingId;
 
     public ServiceWarehouse(int space){
+        this.buildingId = id++;
         this.space = space;
         this.storageSpace = (random_int(10,20)*space/100);
         for(int i =0; i<2;i++){
@@ -22,6 +26,11 @@ public class ServiceWarehouse {
         while (freeSpace > 20){
             css.add(new CarServiceSpot(70));
             freeSpace-=70;
+        }
+
+        int parkingSpaces = random_int(2,5);
+        for(int i = 0; i<parkingSpaces;i++){
+            parking.add(new ParkingSpace());
         }
     }
 
