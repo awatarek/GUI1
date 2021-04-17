@@ -17,7 +17,7 @@ public class ServiceAction {
 
 
     public ServiceAction(Vehicle vehicle, LocalDateTime date, LocalDateTime plusDays, boolean parkingspot, ServiceWarehouse currentBuilding) {
-        this.serviceID = serviceInt++;
+        this.serviceID = ++serviceInt;
         this.vehicle = vehicle;
         this.startDate = date;
         this.endDate = plusDays;

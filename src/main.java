@@ -3,7 +3,7 @@ import java.util.*;
 public class main {
 
     public static void main(String args[]){
-        DataCollector data = new DataCollector();
+        DataCollector data = new DataCollector(true);
         OurDate date = new OurDate();
         MyThread myThread = new MyThread();
         myThread.start();
@@ -47,6 +47,7 @@ public class main {
                 System.out.println("\t removeRenter \t removes renter from room");
             System.out.println("service:");
                 System.out.println("\t show \t shows all services and theyrs status");
+                System.out.println("\t showYour \t shows current user service");
                 System.out.println("\t check [id] \t Check service status");
                 System.out.println("\t create [vechicleType] [parking True/False] [intependent True/False] \t create new service job");
             System.out.println("parking:");
@@ -108,10 +109,12 @@ public class main {
         } else if(args[0].equals("service")){
             if(args[1].equals("show")){
                 dataCollector.showServices();
+            } else if (args[1].equals("showYour")){
+                dataCollector.showAllServices();
             } else if(args[1].equals("check")) {
                 //dataCollector.removeItem(args[2]);
                 System.out.println("\t check [id] \t Check service status - but first building choose");
-            } else if(args[1].equals("creat")) {
+            } else if(args[1].equals("create")) {
                 dataCollector.createServiceJob(args[2], Boolean.getBoolean(args[3]), Boolean.getBoolean(args[4]));
             }
         } else if(args[0].equals("latePayment")){

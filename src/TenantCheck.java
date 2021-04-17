@@ -1,4 +1,3 @@
-import java.sql.ClientInfoStatus;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ class CheckTenant extends TimerTask {
                     if (getMilisec(css.endTime) > now) {
                         ServiceAction ac = getServiceAction(css.jobId);
                         if (ac.parkingSpot) {
-                            getVehicleToPaking(ac, getCustomer(css.jobId));
+                            getVehicleToParking(ac, getCustomer(css.jobId));
                         }
                         css.jobId = 0;
                         css.ocupated = false;
@@ -102,6 +101,7 @@ class CheckTenant extends TimerTask {
         ServiceAction SeA = null;
         for(Person customer: dc.customers){
             for(ServiceAction sa : customer.serviceActions){
+                System.out.println(sa.serviceID);
                 if(sa.serviceID == saId){
                     SeA = sa;
                 }
@@ -122,7 +122,7 @@ class CheckTenant extends TimerTask {
         return user;
     }
 
-    public void getVehicleToPaking(ServiceAction sa, Person customer){
+    public void getVehicleToParking(ServiceAction sa, Person customer){
         DataCollector dc = new DataCollector();
         ParkingSpace parking = null;
         if(sa.parkingSpot){

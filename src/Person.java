@@ -40,7 +40,7 @@ public class Person {
         this.lastName = secondNames[(int) (Math.random()*11)];
     }
 
-    public void addRent(LocalDateTime end,int building,int room,roomTypes type,int price) {
+    public void addRent(LocalDateTime end, int building, int room, roomTypes type, int price) {
         this.rentInfo.add(new TenantAlert(end, building, room, type, price, TenantAlertType.rented));
     }
 }

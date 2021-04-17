@@ -2,20 +2,22 @@ import exception.NeverRentException;
 import vehicle.*;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 
 public class DataCollector {
     public static ArrayList<Person> customers = new ArrayList<Person>();
-    public static Person currentUser = new Person(0, "admin", "admin");
+    public static Person currentUser = null;
     public static ArrayList<ServiceWarehouse> buildings = new ArrayList<ServiceWarehouse>();
     public static ServiceWarehouse currentBuilding;
     public static ConsumerWarehouse currentRoom;
 
-    public DataCollector() {
+    public DataCollector(boolean test) {
         this.setupDemo();
         this.demoOwner();
+    }
+
+    public DataCollector() {
     }
 
     public void demoOwner() {
@@ -36,12 +38,14 @@ public class DataCollector {
     }
 
     private void setupDemo() {
+        customers.add(new Person(0, "admin", "admin"));
         for (int i = 0; i < 20; i++) {
             customers.add(new Person());
         }
         for (int i = 0; i < 3; i++) {
             buildings.add(new ServiceWarehouse());
         }
+        currentUser = customers.get(0);
     }
 
     public void changeUser(Person user) {
@@ -197,17 +201,20 @@ public class DataCollector {
     public void buyRoom() {
         if(!(currentRoom.renters.size()==0)){
             System.out.println("Somebody allready bought this room!");
-        } else {
-            if(getUserTenantAlertsCost()>1250){
+        } else if (isGoodTenant()){
+
+        } else if(getUserTenantAlertsCost()>1250){
                 System.out.println("Person renter rooms for  "+getUserTenantAlertsCost()+" and cannot buy another one.");
-            } else {
-                currentRoom.renters.add(currentUser);
-                LocalDateTime now = LocalDateTime.now();
-                now.plusDays(5);
-                currentUser.addRent(now, currentBuilding.buildingId, currentRoom.cwid, roomTypes.warehouse, 250);
-                System.out.println("You bought the room!");
-            }
+        } else {
+            currentRoom.renters.add(currentUser);
+            LocalDateTime now = LocalDateTime.now();
+            now.plusDays(5);
+            currentUser.addRent(now, currentBuilding.buildingId, currentRoom.cwid, roomTypes.warehouse, 250);
+            System.out.println("You bought the room!");
         }
+    }
+
+    private boolean isGoodTenant() {
     }
 
     public void addItem(String name,String space) throws Exception {
@@ -344,6 +351,7 @@ public class DataCollector {
             if (icss.ocupated == false) {
                 System.out.println("Your car is repaired in: " + icss.icssId);
                 yourICSS = icss;
+                break;
             }
         }
 
@@ -356,6 +364,7 @@ public class DataCollector {
             if (css.ocupated == false) {
                 System.out.println("Your car is repaired in: " + css.cssId);
                 yourCSS = css;
+                break;
             }
         }
         return yourCSS;
@@ -389,6 +398,7 @@ public class DataCollector {
             ta.price += 150;
         }
         currentUser.serviceActions.add(sa);
+        System.out.println(currentUser.serviceActions.get(0).serviceID);
         currentUser.rentInfo.add(ta);
     }
 
@@ -481,6 +491,14 @@ public class DataCollector {
 
     public long getMilisec(LocalDateTime ldt){
         return ldt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    public void showAllServices() {
+        OurDate od = new OurDate();
+        for(ServiceAction sa : currentUser.serviceActions){
+            System.out.println("Service job: "+sa.serviceID+" in building: "
+                    +sa.buildingId+" was independent: "+sa.independent+" is still active:"+(od.getMilisec()>getMilisec(sa.endDate)));
+        }
     }
 }
 
