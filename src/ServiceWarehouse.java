@@ -16,16 +16,17 @@ public class ServiceWarehouse {
     public ServiceWarehouse(){
         this.buildingId = id++;
         int height = random_int(3,10);
-        this.space = random_int(10,20)*random_int(10,20)*height;
-        this.storageSpace = (random_int(10,20)*space/100);
-        for(int i =0; i<2;i++){
-            this.storage.add(new ConsumerWarehouse((this.storageSpace/2)));
+        this.space = random_int(10,15)*random_int(10,15)*height;
+        this.storageSpace = (random_int(30,60)*space/100);
+        for(int i =0; i<6;i++){
+            this.storage.add(new ConsumerWarehouse((this.storageSpace/6)));
         }
 
-        this.freeSpace = (this.space - this.storageSpace);
         icss.add(new IndependentCarServiceSpot(20));
-        freeSpace-=20;
-        while (freeSpace > 20){
+        this.freeSpace = (this.space - this.storageSpace - 20);
+        icss.add(new IndependentCarServiceSpot(20));
+
+        while (freeSpace > 70){
             css.add(new CarServiceSpot(70));
             freeSpace-=70;
         }

@@ -15,7 +15,7 @@ public class Person {
     public int pesel;
     public Address address;
     public Date dateOfBirth;
-    public Date firstRent;
+    public LocalDateTime firstRent;
     //if null while reading send NeverRentException;
 
     public Person(){

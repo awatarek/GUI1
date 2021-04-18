@@ -10,7 +10,6 @@ public class main {
         TenantCheck tenantCheck = new TenantCheck();
         tenantCheck.start();
 
-
         System.out.println("Hello Admin!");
         System.out.println("For command manual send: help");
         boolean userExited = false;

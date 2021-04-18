@@ -21,40 +21,58 @@ class CheckTenant extends TimerTask {
     public void run() {
         ArrayList<Person> customers = dc.customers;
         long now = ourDate.getMilisec();
+
         for(ServiceWarehouse sw : dc.buildings){
+            for(ConsumerWarehouse cw : sw.storage){
+                if(cw.endLease != null && cw.renters != null && cw.renters.size() != 0){
+                    if(getMilisec(cw.endLease) < now){
+                        boolean hasAlert = false;
+                        for(TenantAlert ta : cw.renters.get(0).tenentsAlerts){
+                            if(ta.room == cw.cwid && cw.endLease == ta.end){
+                                hasAlert = true;
+                            }
+                        }
+                        if(!hasAlert){
+                            cw.renters.get(0).tenentsAlerts.add(new TenantAlert(cw.endLease, sw.buildingId, cw.cwid,roomTypes.warehouse ,200, TenantAlertType.rentEndError));
+                        }
+                        LocalDateTime time = LocalDateTime.of(cw.endLease.getYear(), cw.endLease.getMonth(), cw.endLease.getDayOfMonth(), cw.endLease.getHour(), cw.endLease.getMinute());
+                        if(getMilisec(time.plusDays(30)) < now){
+                            cw.renters.clear();
+                            cw.items.clear();
+                        }
+                    }
+                }
+            }
             for(IndependentCarServiceSpot icss : sw.icss){
                 if(icss.endTime != null){
-                    if(getMilisec(icss.endTime) > now){
+                    if(getMilisec(icss.endTime) < now){
                         ServiceAction ac = getServiceAction(icss.jobId);
                         if(ac.parkingSpot){
-
+                            getVehicleToParking(ac, getCustomer(icss.jobId));
                         }
                         icss.jobId = 0;
                         icss.ocupated = false;
-                        icss.endTime = null;
                     }
                 }
             }
             for(CarServiceSpot css : sw.css){
                 if(css.endTime != null) {
-                    if (getMilisec(css.endTime) > now) {
+                    if (getMilisec(css.endTime) < now) {
                         ServiceAction ac = getServiceAction(css.jobId);
                         if (ac.parkingSpot) {
                             getVehicleToParking(ac, getCustomer(css.jobId));
                         }
                         css.jobId = 0;
                         css.ocupated = false;
-                        css.endTime = null;
                     }
                 }
             }
             for(ParkingSpace ps : sw.parking){
-                if(ps.endOfRent != null){
-                    if(getMilisec(ps.endOfRent) > now){
+                if(ps.endOfRent != null && ps.renter != null){
+                    if(getMilisec(ps.endOfRent) < now){
                         ps.renter.tenentsAlerts.add(new TenantAlert(ps.endOfRent, TenantAlertType.parkingError));
                         ps.renter = null;
                         ps.ocupated = false;
-                        ps.endOfRent = null;
                         ps.vehicle = null;
                     }
                 }
@@ -91,6 +109,7 @@ class CheckTenant extends TimerTask {
                 }
             }
         }
+
     }
 
     public long getMilisec(LocalDateTime ldt){

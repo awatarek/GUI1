@@ -19,7 +19,7 @@ public class ConsumerWarehouse {
         this.space -= this.servicePartSpace;
         this.cwid = id++;
         this.startLease = date.getDate();
-        this.endLease = date.getDate().plusDays(14);
+        this.endLease = date.getDate();
     }
 
 

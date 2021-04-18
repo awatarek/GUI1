@@ -52,7 +52,6 @@ public class TenantAlert {
 enum roomTypes{
     parking,
     warehouse,
-    service,
     icss,
     css,
 }

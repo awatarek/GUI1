@@ -3,9 +3,13 @@ import java.time.ZoneId;
 
 public class OurDate {
     static LocalDateTime time;
+    static boolean firstTime = true;
 
     public OurDate(){
-        time = LocalDateTime.now();
+        if(firstTime){
+            time = LocalDateTime.now();
+            firstTime = false;
+        }
     }
 
     public void addDay(){

@@ -1,4 +1,3 @@
-import exception.NeverRentException;
 import vehicle.*;
 
 import java.time.LocalDateTime;
@@ -21,20 +20,26 @@ public class DataCollector {
     }
 
     public void demoOwner() {
+        OurDate od = new OurDate();
         for (int i = 0; i < this.buildings.size(); i++) {
             ServiceWarehouse building = this.buildings.get(i);
-            for(ConsumerWarehouse cs: building.storage)
-            {
-                cs.renters.add(customers.get(0));
+
+            for (int c = 0; c < building.storage.size(); c++) {
+                if (c % 2 == 0) {
+                    building.storage.get(c).renters.add(customers.get(0));
+                    building.storage.get(c).startLease = od.getDate();
+                    building.storage.get(c).endLease = od.getDate().plusDays(5);
+                }
             }
 
             for (int c = 0; c < building.parking.size(); c++) {
                 if (c % 2 == 0) {
                     building.parking.get(c).renter = customers.get(0);
+                    building.parking.get(c).endOfRent = od.getDate().plusDays(5);
                 }
             }
         }
-        buildings.get(0).storage.get(0).renters.add(currentUser);
+        currentUser.firstRent = od.getDate();
     }
 
     private void setupDemo() {
@@ -50,10 +55,11 @@ public class DataCollector {
 
     public void changeUser(Person user) {
         currentUser = user;
+        String info = currentUser.uid + " " + currentUser.firstName + " " + currentUser.lastName + " " + currentUser.pesel;
+        System.out.println(info);
     }
 
     public Person getUser(int uid) {
-        System.out.println(uid);
         return (Person) customers.stream().filter(person -> {
             return person.uid == uid;
         }).findFirst().orElse(null);
@@ -86,27 +92,19 @@ public class DataCollector {
         ArrayList<ParkingSpace> userParking = new ArrayList<>();
 
         for (int i = 0; i < this.buildings.size(); i++) {
-            for (int b = 0; b < buildings.get(i).storage.size(); b++) {
-                ConsumerWarehouse cw = buildings.get(i).storage.stream().filter(storage -> {
-                if(storage.renters.size() == 0){
-                    return false;
-                }
-                return storage.renters.get(0).equals(this.getCurrentUser());
-                }).findFirst().orElse(null);
-                if (cw != null) {
-                    userStorage.add(cw);
+            for (ConsumerWarehouse cw: buildings.get(i).storage) {
+                if(cw.renters != null && cw.renters.size() != 0){
+                    if(cw.renters.get(0).equals(currentUser)){
+                        userStorage.add(cw);
+                    }
                 }
             }
 
             for (int b = 0; b < buildings.get(i).parking.size(); b++) {
-                ParkingSpace ps = buildings.get(i).parking.stream().filter(parking -> {
-                    if(parking.renter == null){
-                        return false;
+                for(ParkingSpace pw : buildings.get(i).parking){
+                    if(pw.renter == currentUser){
+                        userParking.add(pw);
                     }
-                    return parking.renter.equals(this.getCurrentUser());
-                }).findFirst().orElse(null);
-                if (ps != null) {
-                    userParking.add(ps);
                 }
             }
         }
@@ -122,38 +120,24 @@ public class DataCollector {
 
     public void showFreeRooms(int buildingID) {
 
-        ArrayList<ConsumerWarehouse> freeStorage = new ArrayList<>();
-        ArrayList<IndependentCarServiceSpot> icss = new ArrayList<>();
-        ArrayList<CarServiceSpot> css = new ArrayList<>();
-        ArrayList<ParkingSpace> freeParking = new ArrayList<>();
-
         ServiceWarehouse building = this.buildings.get(buildingID);
 
-        for (int c = 0; c < building.parking.size(); c++) {
-            ParkingSpace ps = building.parking.stream().filter(parking -> {
-                return parking.renter == null;
-            }).findFirst().orElse(null);
-            if (ps != null) {
-                freeParking.add(ps);
-            }
-        }
-
         for(ConsumerWarehouse cw: building.storage){
-            if (cw.renters == null) {
+            if (cw.renters == null || cw.renters.size() == 0) {
                 System.out.println("cw"+cw.cwid);
             }
         }
 
-        for(IndependentCarServiceSpot ss: building.icss){
-            if (ss.ocupated == false) {
-                System.out.println("icss"+ss.icssId);
+        for(IndependentCarServiceSpot icss: building.icss){
+            if (icss.ocupated == false) {
+                System.out.println("icss"+icss.icssId);
             }
 
         }
 
-        for(CarServiceSpot ss: building.css){
-            if (ss.ocupated == false) {
-                System.out.println("css"+ss.cssId);
+        for(CarServiceSpot css: building.css){
+            if (css.ocupated == false) {
+                System.out.println("css"+css.cssId);
             }
         }
 
@@ -199,22 +183,57 @@ public class DataCollector {
     }
 
     public void buyRoom() {
+        OurDate od = new OurDate();
         if(!(currentRoom.renters.size()==0)){
-            System.out.println("Somebody allready bought this room!");
-        } else if (isGoodTenant()){
+            System.out.println("Somebody already bought this room!");
+        } else if (isBadTenant()){
+            String errorMessage = "Osoba "+currentUser.firstName+ ""+currentUser.lastName+" posiadała już najem pomieszczeń: \n";
+            ArrayList<TenantAlert> alerts = getBadTenantsAlerts();
+            for(TenantAlert al : alerts){
+                    String type = al.alertType == TenantAlertType.parkingError ? "ps" : "cw";
+                    errorMessage += "Serwis: "+al.building+" Pomieszczenie: "+type+al.room+" - "+al.price+"\n";
+            }
 
+            try {
+                throw new ProblematicTenantException(errorMessage);
+            } catch (ProblematicTenantException e) {
+                e.printStackTrace();
+            }
         } else if(getUserTenantAlertsCost()>1250){
-                System.out.println("Person renter rooms for  "+getUserTenantAlertsCost()+" and cannot buy another one.");
+                System.out.println("Person rented rooms for  "+getUserTenantAlertsCost()+" and cannot buy another one.");
         } else {
             currentRoom.renters.add(currentUser);
-            LocalDateTime now = LocalDateTime.now();
-            now.plusDays(5);
-            currentUser.addRent(now, currentBuilding.buildingId, currentRoom.cwid, roomTypes.warehouse, 250);
+            if(currentUser.firstRent == null){
+                currentUser.firstRent = od.getDate();
+            }
+            currentRoom.startLease = od.getDate();
+            currentRoom.endLease = od.getDate().plusDays(5);
+            currentUser.addRent(currentRoom.endLease , currentBuilding.buildingId, currentRoom.cwid, roomTypes.warehouse, 250);
             System.out.println("You bought the room!");
         }
     }
 
-    private boolean isGoodTenant() {
+    private boolean isBadTenant() {
+        ArrayList<TenantAlert> tena = currentUser.tenentsAlerts;
+        int errors = 0;
+        for(TenantAlert ta : tena){
+            if(ta.alertType == TenantAlertType.parkingError || ta.alertType == TenantAlertType.rentEndError){
+                errors++;
+            }
+        }
+        return errors>3;
+    }
+
+    private ArrayList<TenantAlert> getBadTenantsAlerts() {
+        ArrayList<TenantAlert> tena = currentUser.tenentsAlerts;
+        ArrayList<TenantAlert> badAlert = new ArrayList<>();
+        for(TenantAlert ta : tena){
+            if(ta.alertType == TenantAlertType.parkingError || ta.alertType == TenantAlertType.rentEndError){
+                badAlert.add(ta);
+            }
+        }
+
+        return badAlert;
     }
 
     public void addItem(String name,String space) throws Exception {
@@ -223,7 +242,7 @@ public class DataCollector {
         for(int i = 0; i < currentRoom.items.size();i++){
             currentSpace += currentRoom.items.get(i).itemSpace;
         }
-        if(currentRoom.space < (itemSpace+currentSpace)){
+        if(currentRoom.space > (itemSpace+currentSpace)){
             currentRoom.items.add(new Item(name,itemSpace));
             System.out.println("Item "+name+" has been added");
         } else {
