@@ -33,6 +33,7 @@ class CheckTenant extends TimerTask {
                             }
                         }
                         if(!hasAlert){
+                            System.out.println("test");
                             cw.renters.get(0).tenentsAlerts.add(new TenantAlert(cw.endLease, sw.buildingId, cw.cwid,roomTypes.warehouse ,200, TenantAlertType.rentEndError));
                         }
                         LocalDateTime time = LocalDateTime.of(cw.endLease.getYear(), cw.endLease.getMonth(), cw.endLease.getDayOfMonth(), cw.endLease.getHour(), cw.endLease.getMinute());
@@ -70,7 +71,7 @@ class CheckTenant extends TimerTask {
             for(ParkingSpace ps : sw.parking){
                 if(ps.endOfRent != null && ps.renter != null){
                     if(getMilisec(ps.endOfRent) < now){
-                        ps.renter.tenentsAlerts.add(new TenantAlert(ps.endOfRent, TenantAlertType.parkingError));
+                        ps.renter.tenentsAlerts.add(new TenantAlert(ps.endOfRent,sw.buildingId, 50, TenantAlertType.parkingError));
                         ps.renter = null;
                         ps.ocupated = false;
                         ps.vehicle = null;

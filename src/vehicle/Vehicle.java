@@ -13,4 +13,9 @@ public abstract class Vehicle {
     public Vehicle(carType ct){
 
     }
+
+    public double random_double(int Min, int Max)
+    {
+        return (Math.random()*(Max-Min))+Min;
+    }
 }

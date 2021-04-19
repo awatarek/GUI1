@@ -31,6 +31,7 @@ public class main {
             System.out.println("user:");
                 System.out.println("\t choose [id] \t Chooses your user in system");
                 System.out.println("\t show \t shows information about user");
+                System.out.println("latePayment: \t removes all TenantAlert from 30 days");
             System.out.println("building:");
                 System.out.println("\t choose [id] \t Chooses building in system");
                 System.out.println("\t freeRooms [id] \t shows information about building [id]");
@@ -52,7 +53,6 @@ public class main {
             System.out.println("parking:");
                 System.out.println("\t show \t shows all cars in parking");
                 System.out.println("\t return [id] \t returns car [parking place id] to owner");
-            System.out.println("latePayment: \t removes all TenantAlert from 30 days");
             System.out.println("showAll: \t shows all buildings/rooms data");
 
         } else if(args[0].equals("saveData")){
@@ -73,6 +73,8 @@ public class main {
             } else if(args[1].equals("show")){
                 dataCollector.showUserData();
                 dataCollector.showUsersItem();
+            } else if(args[1].equals("latePayment")){
+                dataCollector.removeLatePayments();
             }
         }else if(args[0].equals("building")){
                 if(args[1].equals("freeRooms")) {
@@ -116,8 +118,6 @@ public class main {
             } else if(args[1].equals("create")) {
                 dataCollector.createServiceJob(args[2], Boolean.getBoolean(args[3]), Boolean.getBoolean(args[4]));
             }
-        } else if(args[0].equals("latePayment")){
-            dataCollector.removeLatePayments();
         } else if(args[0].equals("showAll")){
             dataCollector.showAll();
         } else {
@@ -127,13 +127,6 @@ public class main {
     /*
     /* sprawdzanie czy odpowiednia ilośc argumentów
     /* nie ma wyspecjalizowanych typów samochodów gotowych
-
-
-     Jeśli najem będzie chciała rozpocząć osoba z więcej niż trzema zadłużeniami (co najmniej
-3 obiekty typu Info
-ProblematicTenantException z komunikatem – „Osoba X posiadała już najem pomieszczeń: lista_pomieszczeń - wysokość_zadłużenia”, gdzie X to imię i nazwisko danej osoby,
-lista_pomieszczeń definiuje wynajmowane pomieszczenia, zaś wysokość_zadłużenia definiuje sumaryczną wysokość zadłużenia za to pomieszczenie.
-
      */
 
 }

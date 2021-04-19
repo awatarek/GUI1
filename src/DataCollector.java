@@ -187,7 +187,7 @@ public class DataCollector {
         if(!(currentRoom.renters.size()==0)){
             System.out.println("Somebody already bought this room!");
         } else if (isBadTenant()){
-            String errorMessage = "Osoba "+currentUser.firstName+ ""+currentUser.lastName+" posiadała już najem pomieszczeń: \n";
+            String errorMessage = "Osoba "+currentUser.firstName+" "+currentUser.lastName+" posiadała już najem pomieszczeń: \n";
             ArrayList<TenantAlert> alerts = getBadTenantsAlerts();
             for(TenantAlert al : alerts){
                     String type = al.alertType == TenantAlertType.parkingError ? "ps" : "cw";
@@ -446,7 +446,6 @@ public class DataCollector {
         return freeSpot;
     }
 
-
     private Vehicle carGenerator(String vehicleType) {
         if(vehicleType == "offRoad") {
             return new OffRoadCar();
@@ -498,12 +497,17 @@ public class DataCollector {
 
     public void removeLatePayments() {
         OurDate od = new OurDate();
-        for(TenantAlert alert : currentUser.tenentsAlerts){
+        int position = 0;
+        int iter = currentUser.tenentsAlerts.size();
+        for(int i =0; i < iter; i++){
+            TenantAlert alert = currentUser.tenentsAlerts.get(position);
             LocalDateTime aT = alert.end;
             LocalDateTime ld = LocalDateTime.of(aT.getYear(), aT.getMonth(), aT.getDayOfMonth(), aT.getHour(),aT.getMinute(),aT.getSecond());
             ld = ld.plusDays(30);
             if(od.getMilisec()<getMilisec(ld)){
                 currentUser.tenentsAlerts.remove(alert);
+            } else {
+                position++;
             }
         }
     }
