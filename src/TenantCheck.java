@@ -33,7 +33,6 @@ class CheckTenant extends TimerTask {
                             }
                         }
                         if(!hasAlert){
-                            System.out.println("test");
                             cw.renters.get(0).tenentsAlerts.add(new TenantAlert(cw.endLease, sw.buildingId, cw.cwid,roomTypes.warehouse ,200, TenantAlertType.rentEndError));
                         }
                         LocalDateTime time = LocalDateTime.of(cw.endLease.getYear(), cw.endLease.getMonth(), cw.endLease.getDayOfMonth(), cw.endLease.getHour(), cw.endLease.getMinute());

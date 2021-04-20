@@ -1,7 +1,7 @@
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-public class ConsumerWarehouse {
+public class ConsumerWarehouse implements Comparable<ConsumerWarehouse>{
     public int space;
     public int servicePartSpace;
     private static int id = 0;
@@ -31,5 +31,9 @@ public class ConsumerWarehouse {
     public void extendLease() {
         endLease.plusDays(14);
         System.out.println("Lease extended!");
+    }
+
+    public int compareTo(ConsumerWarehouse o) {
+        return this.space - o.space;
     }
 }

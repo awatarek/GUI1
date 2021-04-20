@@ -1,0 +1,49 @@
+Building 0:
+	 storage id: 2, space:33, renter:admin admin, ends in:2021-04-25T13:18:24.093825
+		 Item name: b, item space: 200
+		 Item name: a, item space: 20
+		 Item name: b, item space: 20
+		 Item name: c, item space: 20
+	 storage id: 0, space:73, renter:admin admin, ends in:2021-04-25T13:18:24.093825
+		 Item name: b, item space: 200
+		 Item name: a, item space: 20
+		 Item name: b, item space: 20
+		 Item name: c, item space: 20
+	 storage id: 3, space:130
+	 storage id: 1, space:162
+Building 1:
+	 storage id: 6, space:65, renter:admin admin, ends in:2021-04-25T13:18:24.093825
+		 Item name: b, item space: 200
+		 Item name: a, item space: 20
+		 Item name: b, item space: 20
+		 Item name: c, item space: 20
+	 storage id: 8, space:65, renter:admin admin, ends in:2021-04-25T13:18:24.093825
+		 Item name: b, item space: 200
+		 Item name: a, item space: 20
+		 Item name: b, item space: 20
+		 Item name: c, item space: 20
+	 storage id: 4, space:81, renter:admin admin, ends in:2021-04-25T13:18:24.093825
+		 Item name: b, item space: 200
+		 Item name: a, item space: 20
+		 Item name: b, item space: 20
+		 Item name: c, item space: 20
+	 storage id: 7, space:81
+	 storage id: 5, space:98
+Building 2:
+	 storage id: 9, space:22, renter:admin admin, ends in:2021-04-25T13:18:24.093825
+		 Item name: b, item space: 200
+		 Item name: a, item space: 20
+		 Item name: b, item space: 20
+		 Item name: c, item space: 20
+	 storage id: 12, space:36
+	 storage id: 11, space:58, renter:admin admin, ends in:2021-04-25T13:18:24.093825
+		 Item name: b, item space: 200
+		 Item name: a, item space: 20
+		 Item name: b, item space: 20
+		 Item name: c, item space: 20
+	 storage id: 13, space:58, renter:admin admin, ends in:2021-04-25T13:18:24.093825
+		 Item name: b, item space: 200
+		 Item name: a, item space: 20
+		 Item name: b, item space: 20
+		 Item name: c, item space: 20
+	 storage id: 10, space:72

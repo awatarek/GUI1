@@ -18,8 +18,10 @@ public class ServiceWarehouse {
         int height = random_int(3,10);
         this.space = random_int(10,15)*random_int(10,15)*height;
         this.storageSpace = (random_int(30,60)*space/100);
-        for(int i =0; i<6;i++){
-            this.storage.add(new ConsumerWarehouse((this.storageSpace/6)));
+        while (storageSpace > 50){
+            int localSpace = height*random_int(2,6)*random_int(2,6);
+            this.storage.add(new ConsumerWarehouse(localSpace));
+            storageSpace -= localSpace;
         }
 
         icss.add(new IndependentCarServiceSpot(20));

@@ -56,16 +56,16 @@ public class main {
             System.out.println("showAll: \t shows all buildings/rooms data");
 
         } else if(args[0].equals("saveData")){
-            /* Stan magazynu powinien być zapisany do pliku warehouses.txt, zaś pomieszczenia wewnątrz piku powinny być posortowane rosnąco według rozmiaru pomieszczenia.
-            • Zawartość każdego z pomieszczeń powinno być posortowane malejąco według rozmiaru
-            przedmiotu, a jeśli jest taki sam to według nazwy.
-            • Informacje dot. serwisu samochodowego powinny być zapisane do pliku services.txt z
-            wyszczególnieniem aktualnych pojazdów w serwisie oraz historii napraw dla każdego z
-            serwisów (wraz z kosztem sumarycznym naprawy każdego z samochodów - wyliczenie na
-            podstawie liczby dni i kosztu jednego dnia serwisu dla danego sposobu - samodzielna/przez
-            mechanika).
-            • Nie wolno korzystać z żadnego rodzaju serializacji
-            */
+            dataCollector.saveWarehouse();
+            dataCollector.saveServices();
+            //TODO Stan magazynu powinien być zapisany do pliku warehouses.txt, zaś pomieszczenia wewnątrz piku powinny być posortowane rosnąco według rozmiaru pomieszczenia.
+            //      Zawartość każdego z pomieszczeń powinno być posortowane malejąco według rozmiaru
+            //      przedmiotu, a jeśli jest taki sam to według nazwy.
+            //      Informacje dot. serwisu samochodowego powinny być zapisane do pliku services.txt z
+            //      wyszczególnieniem aktualnych pojazdów w serwisie oraz historii napraw dla każdego z
+            //      serwisów (wraz z kosztem sumarycznym naprawy każdego z samochodów - wyliczenie na
+            //      podstawie liczby dni i kosztu jednego dnia serwisu dla danego sposobu - samodzielna/przez
+            //      mechanika).
         } else if(args[0].equals("user")) {
             if(args[1].equals("choose")){
                 Person user = dataCollector.getUser(Integer.parseInt(args[2]));
@@ -105,16 +105,18 @@ public class main {
                 dataCollector.removeRenter();
             }
         } else if(args[0].equals("parking")){
-                /*przedmiotów pamiętając, aby nie przepełnić miejsca park*/
-                /* wyjęcia przedmiotów*/
+            if(args[1].equals("show")){
+                dataCollector.showParking();
+            } else if (args[1].equals("return")){
+                dataCollector.freeParkingSpace(args[1]);
+            }
         } else if(args[0].equals("service")){
             if(args[1].equals("show")){
                 dataCollector.showServices();
             } else if (args[1].equals("showYour")){
                 dataCollector.showAllServices();
             } else if(args[1].equals("check")) {
-                //dataCollector.removeItem(args[2]);
-                System.out.println("\t check [id] \t Check service status - but first building choose");
+                dataCollector.checkService(args[2], args[3]);
             } else if(args[1].equals("create")) {
                 dataCollector.createServiceJob(args[2], Boolean.getBoolean(args[3]), Boolean.getBoolean(args[4]));
             }
@@ -124,10 +126,9 @@ public class main {
             System.out.println("some error ocured! Check your command");
         }
     }
-    /*
-    /* sprawdzanie czy odpowiednia ilośc argumentów
-    /* nie ma wyspecjalizowanych typów samochodów gotowych
-     */
+    // FIXME:
+    //  sprawdzanie czy odpowiednia ilośc argumentów
+    //  nie ma wyspecjalizowanych typów samochodów gotowych
 
 }
 

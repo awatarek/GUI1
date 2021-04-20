@@ -1,8 +1,13 @@
 import vehicle.*;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 public class DataCollector {
     public static ArrayList<Person> customers = new ArrayList<Person>();
@@ -29,12 +34,17 @@ public class DataCollector {
                     building.storage.get(c).renters.add(customers.get(0));
                     building.storage.get(c).startLease = od.getDate();
                     building.storage.get(c).endLease = od.getDate().plusDays(5);
+                    building.storage.get(c).items.add(new Item("b", 20));
+                    building.storage.get(c).items.add(new Item("b", 200));
+                    building.storage.get(c).items.add(new Item("a", 20));
+                    building.storage.get(c).items.add(new Item("c", 20));
                 }
             }
 
             for (int c = 0; c < building.parking.size(); c++) {
                 if (c % 2 == 0) {
                     building.parking.get(c).renter = customers.get(0);
+                    building.parking.get(c).ocupated = true;
                     building.parking.get(c).endOfRent = od.getDate().plusDays(5);
                 }
             }
@@ -522,6 +532,92 @@ public class DataCollector {
             System.out.println("Service job: "+sa.serviceID+" in building: "
                     +sa.buildingId+" was independent: "+sa.independent+" is still active:"+(od.getMilisec()>getMilisec(sa.endDate)));
         }
+    }
+
+    public void showParking() {
+        for (ServiceWarehouse sw : buildings){
+            System.out.println("Parking spots in building "+sw.buildingId);
+            for(ParkingSpace ps : sw.parking){
+                String parkingSpot = "Spot: "+ps.parkingId+" is ocupated: "+ps.ocupated;
+                parkingSpot += ps.ocupated ? ", ends: "+ps.endOfRent.toString()+", renter: "+ps.renter.firstName+" "+ps.renter.lastName
+                        : " ";
+                System.out.println("\t"+parkingSpot);
+
+            }
+        }
+    }
+
+    public void freeParkingSpace(String arg) {
+        for (ServiceWarehouse sw : buildings){
+            System.out.println("Parking spots in building "+sw.buildingId);
+            for(ParkingSpace ps : sw.parking){
+                if(ps.parkingId == Integer.parseInt(arg)){
+                    ps.ocupated = false;
+                    ps.renter = null;
+                    ps.endOfRent = LocalDateTime.now();
+                    ps.vehicle = null;
+                    System.out.println("Vehicle "+ps.vehicle+" has been returend to owner: "+ps.renter.firstName+" "+ps.renter.lastName);
+                }
+            }
+        }
+    }
+
+    public void checkService(String arg, String arg2) {
+        Boolean independent = Boolean.parseBoolean(arg2);
+        if(independent){
+            for(IndependentCarServiceSpot icss : currentBuilding.icss){
+                if(icss.icssId == Integer.parseInt(arg)){
+                    System.out.println("icss "+icss.icssId+" is currently: "+icss.ocupated + (icss.ocupated ?" it will be in that state to: "+icss.endTime.toString() : ""));
+                }
+            }
+        } else {
+            for(CarServiceSpot css : currentBuilding.css){
+                if(css.cssId == Integer.parseInt(arg)){
+                    System.out.println("icss "+css.cssId+" is currently: "+css.ocupated + (css.ocupated ?" it will be in that state to: "+css.endTime.toString() : ""));
+                }
+            }
+        }
+    }
+
+    public void saveWarehouse() {
+        String fileMessage = "";
+        for(ServiceWarehouse sw: buildings){
+            fileMessage += "Building "+sw.buildingId+":\n";
+            ArrayList<ConsumerWarehouse> ourList = new ArrayList<>();
+            for(ConsumerWarehouse cw : sw.storage){
+               ourList.add(cw);
+            }
+            Collections.sort(ourList);
+            for(ConsumerWarehouse cw: ourList){
+                ArrayList<Item> ourItems = new ArrayList<>();
+                for(Item it : cw.items){
+                    ourItems.add(it);
+                }
+                Collections.sort(ourItems);
+
+                fileMessage+="\t storage id: "+cw.cwid+", space:"+cw.space;
+                fileMessage+= cw.renters.size() != 0 ? ", renter:"+cw.renters.get(0).firstName+" "+cw.renters.get(0).lastName+", ends in:"+cw.endLease.toString()+"\n": "\n";
+                for(Item it : ourItems){
+                    fileMessage+="\t\t Item name: "+it.itemName+", item space: "+it.itemSpace+"\n";
+                }
+            }
+        }
+
+        System.out.println(fileMessage);
+        try {
+            writeToFile("warehouses.txt", fileMessage);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveServices() {
+    }
+
+    public void writeToFile(String fileName, String msg) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+        writer.write(msg);
+        writer.close();
     }
 }
 
