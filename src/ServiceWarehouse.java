@@ -16,7 +16,7 @@ public class ServiceWarehouse {
     public ServiceWarehouse(){
         this.buildingId = id++;
         int height = random_int(3,10);
-        this.space = random_int(10,15)*random_int(10,15)*height;
+        this.space = random_int(8,10)*random_int(8,10)*height;
         this.storageSpace = (random_int(30,60)*space/100);
         while (storageSpace > 50){
             int localSpace = height*random_int(2,6)*random_int(2,6);

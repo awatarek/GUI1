@@ -15,6 +15,7 @@ class ChangeDate extends TimerTask {
     OurDate ourDate = new OurDate();
     DataCollector dc = new DataCollector();
     public void run() {
+        //System.out.println(ourDate.getDate());
         ourDate.addDay();
         dc.checkForParkingFreeSpace();
         dc.checkForServiceFreeSpace();

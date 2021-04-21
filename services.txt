@@ -1,0 +1,89 @@
+
+Building 0:
+
+Independent Car Service Spots: 
+	ICSS0:  
+		History of jobs
+			Car: 0, Type:urban, Price:100
+			Car: 2, Type:urban, Price:200
+	ICSS1:  
+		History of jobs
+			Car: 1, Type:urban, Price:150
+			Car: 3, Type:urban, Price:100
+
+Car Service Spots: 
+	CSS0:  
+		active job: true Car: 13, urban 
+		History of jobs:
+			Car: 6, Type:urban, Price:330
+			Car: 12, Type:urban, Price:330
+	CSS1:  
+		active job: true Car: 14, urban 
+		History of jobs:
+			Car: 7, Type:urban, Price:440
+	CSS2:  
+		active job: true Car: 15, urban 
+		History of jobs:
+			Car: 8, Type:urban, Price:110
+	CSS3:  
+		active job: true Car: 16, urban 
+		History of jobs:
+			Car: 9, Type:urban, Price:220
+	CSS4:  
+		History of jobs:
+	CSS5:  
+		History of jobs:
+
+Building 1:
+
+Independent Car Service Spots: 
+	ICSS2:  
+		History of jobs
+	ICSS3:  
+		History of jobs
+
+Car Service Spots: 
+	CSS6:  
+		History of jobs:
+	CSS7:  
+		History of jobs:
+	CSS8:  
+		History of jobs:
+	CSS9:  
+		History of jobs:
+	CSS10:  
+		History of jobs:
+	CSS11:  
+		History of jobs:
+	CSS12:  
+		History of jobs:
+	CSS13:  
+		History of jobs:
+	CSS14:  
+		History of jobs:
+	CSS15:  
+		History of jobs:
+
+Building 2:
+
+Independent Car Service Spots: 
+	ICSS4:  
+		History of jobs
+	ICSS5:  
+		History of jobs
+
+Car Service Spots: 
+	CSS16:  
+		History of jobs:
+	CSS17:  
+		History of jobs:
+	CSS18:  
+		History of jobs:
+	CSS19:  
+		History of jobs:
+	CSS20:  
+		History of jobs:
+	CSS21:  
+		History of jobs:
+	CSS22:  
+		History of jobs:

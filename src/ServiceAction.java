@@ -14,15 +14,17 @@ public class ServiceAction {
     IndependentCarServiceSpot icss = null;
     static int serviceInt = 0;
     int serviceID;
+    int price;
 
 
-    public ServiceAction(Vehicle vehicle, LocalDateTime date, LocalDateTime plusDays, boolean parkingspot, ServiceWarehouse currentBuilding) {
+    public ServiceAction(Vehicle vehicle, LocalDateTime date, LocalDateTime plusDays, boolean parkingspot, ServiceWarehouse currentBuilding, int price) {
         this.serviceID = ++serviceInt;
         this.vehicle = vehicle;
         this.startDate = date;
         this.endDate = plusDays;
         this.parkingSpot = parkingspot;
         this.buildingId = currentBuilding.buildingId;
+        this.price = price;
     }
 }
 
