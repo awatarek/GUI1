@@ -47,9 +47,9 @@ class CheckTenant extends TimerTask {
                 if (icss.endTime != null) {
                     if (getMilisec(icss.endTime) < now) {
                         ServiceAction ac = getServiceAction(icss.jobId);
-                        if(ac!= null){
+                        if (ac != null) {
                             if (ac.parkingSpot) {
-                                getVehicleToParking(ac, getCustomer(icss.jobId));
+                                getVehicleToParking(ac, getCustomer(icss.jobId), icss, null);
                             }
                         }
                         icss.ocupated = false;
@@ -61,7 +61,7 @@ class CheckTenant extends TimerTask {
                     if (getMilisec(css.endTime) < now) {
                         ServiceAction ac = getServiceAction(css.jobId);
                         if (ac != null && ac.parkingSpot) {
-                            getVehicleToParking(ac, getCustomer(css.jobId));
+                            getVehicleToParking(ac, getCustomer(css.jobId), null, css);
                         }
                         css.ocupated = false;
                     }
@@ -86,7 +86,6 @@ class CheckTenant extends TimerTask {
                 long diff = tenentTime - now;
                 if (diff < 0) {
                     TenantAlert info = client.rentInfo.get(x);
-                    /*wyslil info o bledzie*/
                     boolean activeAlert = false;
                     for (TenantAlert ta : client.tenentsAlerts) {
                         if (ta.uid == info.uid) {
@@ -136,33 +135,42 @@ class CheckTenant extends TimerTask {
         for (Person customer : dc.customers) {
             for (ServiceAction sa : customer.serviceActions) {
                 if (sa.serviceID == saId) {
-                    customer = customer;
+                    user = customer;
                 }
             }
         }
         return user;
     }
 
-    public void getVehicleToParking(ServiceAction sa, Person customer) {
+    public void getVehicleToParking(ServiceAction sa, Person customer, IndependentCarServiceSpot icss, CarServiceSpot css) {
         DataCollector dc = new DataCollector();
         ParkingSpace parking = null;
+
         if (sa.parkingSpot) {
             parking = searchFreeParking(sa.buildingId);
         }
-        if (parking.parkingId < 1000) {
-            sa.parkingSpotId = parking.parkingId;
-            parking.renter = getCustomer(sa.serviceID);
-            parking.ocupated = true;
-            parking.endOfRent = sa.endDate;
-        } else if (parking == null) {
+        if (parking == null) {
             System.out.println("There are no free parking, your vehicle will be added to parking wait list");
             dc.buildings.get(sa.buildingId).parkingWait.add(new WaitingParking(sa.vehicle, getCustomer(sa.buildingId)));
-        }
+        } else if (parking.parkingId < 1000) {
+            sa.parkingSpotId = parking.parkingId;
+            parking.renter = getCustomer(sa.serviceID);
+            parking.vehicle = sa.vehicle;
+            parking.ocupated = true;
+            parking.endOfRent = sa.endDate;
+            ParkingSpace ps = dc.buildings.get(sa.buildingId).parking.get(sa.parkingSpotId);
+            ps.endOfRent = ourDate.getDate().plusDays(14);
+            ps.renter = customer;
+            ps.ocupated = true;
+            if (icss != null) {
+                icss.ocupated = false;
+                icss.endTime = null;
+            } else if (css != null) {
+                css.ocupated = false;
+                css.endTime = null;
+            }
 
-        ParkingSpace ps = dc.buildings.get(sa.buildingId).parking.get(sa.parkingSpotId);
-        ps.endOfRent = ourDate.getDate().plusDays(14);
-        ps.renter = customer;
-        ps.ocupated = true;
+        }
 
     }
 

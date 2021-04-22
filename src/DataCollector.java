@@ -150,9 +150,9 @@ public class DataCollector {
             }
         }
 
-        for (ParkingSpace sp : building.parking) {
-            if (sp.renter == null) {
-                System.out.println("sp" + sp.parkingId);
+        for (ParkingSpace ps : building.parking) {
+            if (ps.renter == null) {
+                System.out.println("ps" + ps.parkingId);
             }
         }
 
@@ -265,9 +265,24 @@ public class DataCollector {
         System.out.println("Item with ID: " + itemId + " has been deleted");
     }
 
+    public void showRenters() {
+        if (currentRoom.renters.size() == 0) {
+            System.out.println("Room has no renters");
+        } else {
+            int renterId = 0;
+            for (Person p : currentRoom.renters) {
+                System.out.println(renterId + ": " + p.firstName + " " + p.lastName);
+                renterId++;
+            }
+        }
+
+    }
+
     public void addRenter(String newRenterID) {
         int clientId = Integer.parseInt(newRenterID);
-        if (currentRoom.renters.get(0) == currentUser) {
+        if (currentRoom.renters.size() == 0) {
+            System.out.println("Room is nobody's property. Please buy it first");
+        } else if (currentRoom.renters.get(0) == currentUser) {
             currentRoom.renters.add(customers.get(clientId));
         } else {
             System.out.println("you are not the room owner");
@@ -275,9 +290,15 @@ public class DataCollector {
 
     }
 
-    public void removeRenter() {
-        if (currentRoom.renters.get(0) == currentUser) {
-            currentRoom.renters.remove(currentUser);
+    public void removeRenter(String renterID) {
+        if (currentRoom.renters.size() == 0) {
+            System.out.println("Room is nobody's property. Please buy it first");
+        } else if (currentRoom.renters.get(0) == currentUser) {
+            if (Integer.parseInt(renterID) == currentRoom.renters.get(0).uid) {
+                System.out.println("You cant remove owner from renters");
+            } else {
+                currentRoom.renters.remove(renterID);
+            }
         } else {
             System.out.println("you are not the room owner");
         }
@@ -311,7 +332,7 @@ public class DataCollector {
         for (RoomsInfos rooms : userRooms) {
             for (ServiceWarehouse sw : buildings) {
                 for (ConsumerWarehouse cw : sw.storage) {
-                    if(cw.renters.size() != 0){
+                    if (cw.renters.size() != 0) {
                         if (cw.renters.get(0) == currentUser) {
                             for (Item item : cw.items) {
                                 items.add(item);
@@ -436,10 +457,13 @@ public class DataCollector {
 
     private ParkingSpace searchFreeParking(int buildingId) {
         ParkingSpace freeSpot = null;
-        ServiceWarehouse sw = (ServiceWarehouse) buildings.stream().filter(building -> {
-            return building.buildingId == buildingId;
-        });
-        for (ParkingSpace ps : sw.parking) {
+        ServiceWarehouse sw1 = null;
+        for (ServiceWarehouse sw : buildings) {
+            if (sw.buildingId == buildingId) {
+                sw1 = sw;
+            }
+        }
+        for (ParkingSpace ps : sw1.parking) {
             if (ps.renter == null) {
                 freeSpot = ps;
                 break;
@@ -467,23 +491,27 @@ public class DataCollector {
     public void checkForParkingFreeSpace() {
         OurDate od = new OurDate();
         for (ServiceWarehouse sw : buildings) {
-            for (WaitingParking wp : sw.parkingWait) {
-                ParkingSpace freeSpot = searchFreeParking(sw.buildingId);
-                if (freeSpot != null) {
-                    freeSpot.ocupated = true;
-                    freeSpot.renter = wp.owner;
-                    freeSpot.endOfRent = od.getDate().plusDays(14);
-                    freeSpot.vehicle = wp.vehicle;
-                    sw.parkingWait.remove(wp);
+            if (sw.parkingWait.size() != 0) {
+                for (int i = 0; i < sw.parkingWait.size(); i++) {
+                    WaitingParking wp = sw.parkingWait.get(i);
+                    ParkingSpace freeSpot = searchFreeParking(sw.buildingId);
+                    if (freeSpot != null) {
+                        freeSpot.ocupated = true;
+                        freeSpot.renter = wp.owner;
+                        freeSpot.endOfRent = od.getDate().plusDays(14);
+                        freeSpot.vehicle = wp.vehicle;
+                        sw.parkingWait.remove(wp);
+                    }
                 }
             }
         }
     }
 
+
     public void checkForServiceFreeSpace() {
         OurDate od = new OurDate();
         for (ServiceWarehouse sw : buildings) {
-            for(int i =0; i < sw.waitingWork.size(); i++){
+            for (int i = 0; i < sw.waitingWork.size(); i++) {
                 WaitingService ws = sw.waitingWork.get(i);
                 if (ws.wj == WorkJob.css) {
                     CarServiceSpot css = getFreeCSS(ws.building);
@@ -546,14 +574,13 @@ public class DataCollector {
 
     public void freeParkingSpace(String arg) {
         for (ServiceWarehouse sw : buildings) {
-            System.out.println("Parking spots in building " + sw.buildingId);
             for (ParkingSpace ps : sw.parking) {
                 if (ps.parkingId == Integer.parseInt(arg)) {
+                    System.out.println("Vehicle " + ps.vehicle + " has been returend to owner: " + ps.renter.firstName + " " + ps.renter.lastName);
                     ps.ocupated = false;
                     ps.renter = null;
                     ps.endOfRent = LocalDateTime.now();
                     ps.vehicle = null;
-                    System.out.println("Vehicle " + ps.vehicle + " has been returend to owner: " + ps.renter.firstName + " " + ps.renter.lastName);
                 }
             }
         }
@@ -615,7 +642,7 @@ public class DataCollector {
             for (IndependentCarServiceSpot icss : sw.icss) {
                 fileMessage += "\tICSS" + icss.icssId + ":  \n";
                 if (icss.ocupated) {
-                    fileMessage += "\t\tactive job: " + icss.ocupated +" Car: "+ icss.vehicle.vehicleId + ", " + icss.vehicle.carType + " \n";
+                    fileMessage += "\t\tactive job: " + icss.ocupated + " Car: " + icss.vehicle.vehicleId + ", " + icss.vehicle.carType + " \n";
                 }
                 fileMessage += "\t\tHistory of jobs\n";
                 for (ServiceAction sa : saList) {
@@ -629,7 +656,7 @@ public class DataCollector {
             for (CarServiceSpot css : sw.css) {
                 fileMessage += "\tCSS" + css.cssId + ":  \n";
                 if (css.ocupated) {
-                    fileMessage += "\t\tactive job: " + css.ocupated +" Car: "+ css.vehicle.vehicleId + ", " + css.vehicle.carType + " \n";
+                    fileMessage += "\t\tactive job: " + css.ocupated + " Car: " + css.vehicle.vehicleId + ", " + css.vehicle.carType + " \n";
                 }
                 fileMessage += "\t\tHistory of jobs:\n";
                 for (ServiceAction sa : saList) {
