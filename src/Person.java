@@ -1,7 +1,5 @@
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class Person {
     public int uid;
@@ -11,7 +9,7 @@ public class Person {
     public ArrayList<TenantAlert> rentInfo = new ArrayList<>();
     public String firstName;
     public String lastName;
-    public int pesel;
+    public long pesel;
     public Address address;
     public LocalDateTime dateOfBirth;
     public LocalDateTime firstRent;
@@ -62,7 +60,7 @@ public class Person {
             multiplyResult += Integer.parseInt(pesel.charAt(index) + "") * peselWeight[index];
         }
         pesel += (multiplyResult % 10) + "";
-        this.pesel = Integer.parseInt(pesel);
+        this.pesel = Long.parseLong(pesel);
     }
 
     public Person(int num, String firstName, String lastName) {
